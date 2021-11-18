@@ -8,6 +8,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+using System.IO;
+
 
 #region Assignment Instructions
 
@@ -72,19 +74,61 @@ public partial class PartyCharacter
 
 static public class AssignmentPart1
 {
-
+    // - Where are we saving data?  -- Application.dataPath
+    // - Write data into a test file
     static public void SavePartyButtonPressed()
     {
-        foreach (PartyCharacter pc in GameContent.partyCharacters)
+        StreamWriter sw = new StreamWriter(Application.dataPath + Path.DirectorySeparatorChar + "OurBelovedSaveFile.txt");
+        // Debug.Log(Application.dataPath + Path.DirectorySeparatorChar + "OurBelovedSaveFile.txt");
+
+        Debug.Log("----START----");
+
+        foreach (PartyCharacter pc in GameContent.partyCharacters)  // loop through this linklist (partyCharacters)
         {
             Debug.Log("PC class id == " + pc.classID);
+
+            // SAVING::
+            // Debug.Log(pc.classID + "," + pc.health + "," + pc.mana + "," + pc.strength);
+
+            sw.WriteLine(pc.classID + "," + pc.health + "," + pc.mana + "," + pc.strength + "," + pc.agility + "," + pc.wisdom);
+        
         }
+
+        sw.Close(); // Proper way to close the file.
+
+        Debug.Log("----END----");
     }
 
     static public void LoadPartyButtonPressed()
     {
 
-        //GameContent.partyCharacters.Clear();
+        GameContent.partyCharacters.Clear();
+
+        // 1. Findout if the file exist
+        string path = Application.dataPath + Path.DirectorySeparatorChar + "OurBelovedSaveFile.txt";
+        
+        if (File.Exists(path))
+        {
+            string line = "";
+            StreamReader sr = new StreamReader(path);
+
+            while ((line = sr.ReadLine()) != null)  // Read each line unil it reads nothing, return a null
+            {
+                string[] csv = line.Split(',');
+
+                foreach(string i in csv)
+                {
+                    Debug.Log(i);
+                }
+
+                Debug.Log(line);
+
+                PartyCharacter pc = new PartyCharacter(int.Parse(csv[0]), int.Parse(csv[1]), int.Parse(csv[2]), 
+                                                       int.Parse(csv[3]), int.Parse(csv[4]), int.Parse(csv[5]));
+
+                GameContent.partyCharacters.AddLast(pc);
+            }
+        }
 
         GameContent.RefreshUI();
 
@@ -185,3 +229,25 @@ static public class AssignmentPart2
 #endregion
 
 
+
+
+// What do we need to do, in small steps, to save/load data?
+// [DONE]
+// - Figure how we are formatting out data.
+// - Where are we saving data?  -- Application.dataPath
+// - Write data into a test file
+
+
+// ..Loading stuffs..
+// 1. Find the file
+// 2. Open the file
+// 3. Instantiate the reader
+// 4. Goline by line, then stat by stat
+//
+
+//
+//
+//
+//
+//
+// do something to manage version of save
