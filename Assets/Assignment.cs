@@ -51,6 +51,9 @@ public partial class PartyCharacter
 
     public LinkedList<int> equipment;
 
+    public LinkedList<int> otherThings;
+    public LinkedList<int> affliction;
+
 }
 
 
@@ -76,6 +79,11 @@ static public class AssignmentPart1
 {
     // - Where are we saving data?  -- Application.dataPath
     // - Write data into a test file
+
+    const int PartyCharacterSaveDataSignifier = 0;
+    const int EquipmentSaveDataSignifier = 1;
+    const int afflictionSaveDataSignifier = 2;
+
     static public void SavePartyButtonPressed()
     {
         StreamWriter sw = new StreamWriter(Application.dataPath + Path.DirectorySeparatorChar + "OurBelovedSaveFile.txt");
@@ -88,12 +96,18 @@ static public class AssignmentPart1
             Debug.Log("PC class id == " + pc.classID);
 
             // SAVING STATS::
-            sw.WriteLine(pc.classID + "," + pc.health + "," + pc.mana + "," + pc.strength + "," + pc.agility + "," + pc.wisdom);
+            sw.WriteLine(PartyCharacterSaveDataSignifier + 
+                                        "," + pc.classID + 
+                                        "," + pc.health + 
+                                        "," + pc.mana + 
+                                        "," + pc.strength + 
+                                        "," + pc.agility + 
+                                        "," + pc.wisdom);
         
             // SAVING EQUIPMENT::
-            foreach(int equip in pc.equipment)
+            foreach(int equipID in pc.equipment)
             {
-
+                sw.WriteLine(EquipmentSaveDataSignifier + "," + equipID);
             }
 
         }
@@ -106,31 +120,48 @@ static public class AssignmentPart1
     static public void LoadPartyButtonPressed()
     {
 
-        GameContent.partyCharacters.Clear();
 
-        // 1. Findout if the file exist
+        // Define data path
         string path = Application.dataPath + Path.DirectorySeparatorChar + "OurBelovedSaveFile.txt";
         
+        // 1. Findout if the file exist
         if (File.Exists(path))
         {
+            GameContent.partyCharacters.Clear();
+            
             string line = "";
             StreamReader sr = new StreamReader(path);
-
-            while ((line = sr.ReadLine()) != null)  // Read each line unil it reads nothing, return a null
+            
+            // Read each line unil it reads nothing(null)
+            while ((line = sr.ReadLine()) != null)  
             {
-                string[] csv = line.Split(',');
+                string[] csv = line.Split(',');     //The String.Split() method splits a string into an array of strings separated by the split delimeters.
 
-                foreach(string i in csv)
+                //foreach(string i in csv)
+                //{
+                //    Debug.Log(i);
+                //}
+
+                //Debug.Log(line);
+
+                int saveDataSignifier = int.Parse(csv[0]);
+
+                if (saveDataSignifier == PartyCharacterSaveDataSignifier)
                 {
-                    Debug.Log(i);
+                    PartyCharacter pc = new PartyCharacter(int.Parse(csv[1]), int.Parse(csv[2]), int.Parse(csv[3]), 
+                                                           int.Parse(csv[4]), int.Parse(csv[5]), int.Parse(csv[6]));
+
+                    GameContent.partyCharacters.AddLast(pc);
+                }
+                else if (saveDataSignifier == EquipmentSaveDataSignifier)
+                {
+                    GameContent.partyCharacters.Last.Value.equipment.AddLast(int.Parse(csv[1]));
+                }
+                else if (saveDataSignifier == afflictionSaveDataSignifier)  // This could be easily expend
+                {
+                    // Load affliction data
                 }
 
-                Debug.Log(line);
-
-                PartyCharacter pc = new PartyCharacter(int.Parse(csv[0]), int.Parse(csv[1]), int.Parse(csv[2]), 
-                                                       int.Parse(csv[3]), int.Parse(csv[4]), int.Parse(csv[5]));
-
-                GameContent.partyCharacters.AddLast(pc);
             }
         }
 
@@ -152,7 +183,7 @@ static public class AssignmentPart1
 //  This will enable the needed UI/function calls for your to proceed with your assignment.
 static public class AssignmentConfiguration
 {
-    public const int PartOfAssignmentThatIsInDevelopment = 1;
+    public const int PartOfAssignmentThatIsInDevelopment = 2;
 }
 
 /*
@@ -195,6 +226,7 @@ static public class AssignmentPart2
     {
 
         GameContent.RefreshUI();
+        Debug.Log("start");
 
     }
 
@@ -211,21 +243,23 @@ static public class AssignmentPart2
     static public void LoadPartyDropDownChanged(string selectedName)
     {
         GameContent.RefreshUI();
+        Debug.Log("load " + selectedName);
     }
 
     static public void SavePartyButtonPressed()
     {
         GameContent.RefreshUI();
+        Debug.Log("save");
     }
 
     static public void NewPartyButtonPressed()
     {
-
+        Debug.Log("new");
     }
 
     static public void DeletePartyButtonPressed()
     {
-
+        Debug.Log("delete");
     }
 
 }
