@@ -87,11 +87,15 @@ static public class AssignmentPart1
         {
             Debug.Log("PC class id == " + pc.classID);
 
-            // SAVING::
-            // Debug.Log(pc.classID + "," + pc.health + "," + pc.mana + "," + pc.strength);
-
+            // SAVING STATS::
             sw.WriteLine(pc.classID + "," + pc.health + "," + pc.mana + "," + pc.strength + "," + pc.agility + "," + pc.wisdom);
         
+            // SAVING EQUIPMENT::
+            foreach(int equip in pc.equipment)
+            {
+
+            }
+
         }
 
         sw.Close(); // Proper way to close the file.
