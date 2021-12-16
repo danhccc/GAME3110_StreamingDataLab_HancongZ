@@ -221,17 +221,38 @@ Good luck, journey well.
 
 static public class AssignmentPart2
 {
+    const int PartyCharacterSaveDataSignifier = 0;
+    const int EquipmentSaveDataSignifier = 1;
+
+    public const string PartyMetaFile = "PartyIndicesAndNames.txt";
+
+    private static LinkedList<PartySaveData> parties;
+    private static uint lastUsedIndex;
 
     static public void GameStart()
     {
-
         GameContent.RefreshUI();
+
+        LoadPartyMetaData();
+
         Debug.Log("start");
 
     }
 
     static public List<string> GetListOfPartyNames()
     {
+        if (parties == null)
+            return new List<string>() ;
+
+        List<string> pNames = new List<string>();
+
+        foreach (PartySaveData psd in parties)
+        {
+            pNames.Add(psd.name);
+        }
+
+        return pNames;
+
         return new List<string>() {
             "sample 1",
             "sample 2",
@@ -242,12 +263,28 @@ static public class AssignmentPart2
 
     static public void LoadPartyDropDownChanged(string selectedName)
     {
+        foreach (PartySaveData psd in parties)
+        {
+            if (selectedName == psd.name)
+            {
+                psd.LoadParty();
+            }
+        }
+
         GameContent.RefreshUI();
         Debug.Log("load " + selectedName);
     }
 
     static public void SavePartyButtonPressed()
     {
+        lastUsedIndex++;
+        PartySaveData p = new PartySaveData(lastUsedIndex, GameContent.GetPartyNameFromInput());
+        parties.AddLast(p);
+
+        SavePartyMetaData();
+
+        p.SaveParty();
+
         GameContent.RefreshUI();
         Debug.Log("save");
     }
@@ -262,12 +299,179 @@ static public class AssignmentPart2
         Debug.Log("delete");
     }
 
+
+    static public void SavePartyMetaData()
+    {
+        StreamWriter sw = new StreamWriter(Application.dataPath + Path.DirectorySeparatorChar + PartyMetaFile);
+
+        sw.WriteLine("1," + lastUsedIndex);
+
+        foreach(PartySaveData pData in parties)
+        {
+            sw.WriteLine("2," + pData.index + "," + pData.name);
+        }
+
+        sw.Close();
+    }
+
+    static public void LoadPartyMetaData()
+    {
+        parties = new LinkedList<PartySaveData>();
+
+        string path = Application.dataPath + Path.DirectorySeparatorChar + PartyMetaFile;
+        
+
+        // 1. Findout if the file exist
+        if (File.Exists(path))
+        {
+
+            string line = "";
+            StreamReader sr = new StreamReader(path);
+
+            // Read each line unil it reads nothing(null)
+            while ((line = sr.ReadLine()) != null)
+            {
+                string[] csv = line.Split(',');     //The String.Split() method splits a string into an array of strings separated by the split delimeters.
+
+                //if(int.Parse(csv[0]))
+
+                int saveDataSignifier = int.Parse(csv[0]);
+
+                if (saveDataSignifier == 1)
+                {
+                    lastUsedIndex = uint.Parse(csv[1]);
+                }   
+                else if (saveDataSignifier == 2)
+                {
+                    parties.AddLast(new PartySaveData(uint.Parse(csv[1]), csv[2]));
+                }
+
+
+            }
+
+            sr.Close();
+        }
+    }
+
 }
 
 #endregion
 
+class PartySaveData     // Basically an index and a name
+{
+    const int PartyCharacterSaveDataSignifier = 0;
+    const int EquipmentSaveDataSignifier = 1;
 
 
+    public uint index;
+
+    public string name;
+
+    public PartySaveData(uint index, string name)
+    {
+        this.index = index;
+        this.name = name;
+    }
+
+    public void SaveParty()
+    {
+        StreamWriter sw = new StreamWriter(Application.dataPath + Path.DirectorySeparatorChar + index + ".txt");
+        // Debug.Log(Application.dataPath + Path.DirectorySeparatorChar + "OurBelovedSaveFile.txt");
+
+        Debug.Log("----START-of-loop----");
+
+        foreach (PartyCharacter pc in GameContent.partyCharacters)  // loop through this linklist (partyCharacters)
+        {
+            //Debug.Log("PC class id == " + pc.classID);
+
+            // SAVING STATS::
+            sw.WriteLine(PartyCharacterSaveDataSignifier +
+                                        "," + pc.classID +
+                                        "," + pc.health +
+                                        "," + pc.mana +
+                                        "," + pc.strength +
+                                        "," + pc.agility +
+                                        "," + pc.wisdom);
+
+            // SAVING EQUIPMENT::
+            foreach (int equipID in pc.equipment)
+            {
+                sw.WriteLine(EquipmentSaveDataSignifier + "," + equipID);
+            }
+
+        }
+
+        sw.Close(); // Proper way to close the file.
+        Debug.Log("----END-of-loop----");
+    }
+
+    public void LoadParty()
+    {
+        // Define data path
+        string path = Application.dataPath + Path.DirectorySeparatorChar + index + ".txt";
+
+        // 1. Findout if the file exist
+        if (File.Exists(path))
+        {
+            GameContent.partyCharacters.Clear();
+
+            string line = "";
+            StreamReader sr = new StreamReader(path);
+
+            // Read each line unil it reads nothing(null)
+            while ((line = sr.ReadLine()) != null)
+            {
+                string[] csv = line.Split(',');     //The String.Split() method splits a string into an array of strings separated by the split delimeters.
+
+                int saveDataSignifier = int.Parse(csv[0]);
+
+                if (saveDataSignifier == PartyCharacterSaveDataSignifier)
+                {
+                    PartyCharacter pc = new PartyCharacter(int.Parse(csv[1]), int.Parse(csv[2]), int.Parse(csv[3]),
+                                                           int.Parse(csv[4]), int.Parse(csv[5]), int.Parse(csv[6]));
+
+                    GameContent.partyCharacters.AddLast(pc);
+                }
+                else if (saveDataSignifier == EquipmentSaveDataSignifier)
+                {
+                    GameContent.partyCharacters.Last.Value.equipment.AddLast(int.Parse(csv[1]));
+                }
+            }
+
+            sr.Close();
+        }
+
+        GameContent.RefreshUI();
+
+    }
+}
+
+
+
+
+// Task list!
+//
+// Create a class to package a file name and an index
+// save party with dummy save file
+// load party with dummy save file
+// Write PartyIndicesAndNames.txt
+// [file.index],[party.name]
+// Declare the file name as a constant
+// Open the file
+// Write the index + "," + partyname.txt
+// Sequentially(依次) create a new index for each new party - maintain a last used index(int)
+// When we create a new index, ++ our last used index counter
+// Save/Load our index last used counter
+// Maintain a last used index (int)
+// Save party with file name of given index
+
+// Load party with file name of given index
+// 
+// 
+// Also, what if there's two parties named the same thing?
+// What if party name has comma in it?
+
+/*********************************************************************************************************/
 
 // What do we need to do, in small steps, to save/load data?
 // [DONE]
