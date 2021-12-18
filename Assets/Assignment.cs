@@ -77,17 +77,16 @@ public partial class PartyCharacter
 
 static public class AssignmentPart1
 {
-    // - Where are we saving data?  -- Application.dataPath
-    // - Write data into a test file
 
-    const int PartyCharacterSaveDataSignifier = 0;
-    const int EquipmentSaveDataSignifier = 1;
-    const int afflictionSaveDataSignifier = 2;
+    //REVIEW
+    static string path = Application.dataPath + Path.DirectorySeparatorChar + "PartySavedData.txt";
+    const int PartyMemberSignifier = 1;
+    const int EquipmentSignifer = 2;
+
 
     static public void SavePartyButtonPressed()
     {
-        StreamWriter sw = new StreamWriter(Application.dataPath + Path.DirectorySeparatorChar + "OurBelovedSaveFile.txt");
-        // Debug.Log(Application.dataPath + Path.DirectorySeparatorChar + "OurBelovedSaveFile.txt");
+        StreamWriter sw = new StreamWriter(path);
 
         Debug.Log("----START----");
 
@@ -95,19 +94,13 @@ static public class AssignmentPart1
         {
             Debug.Log("PC class id == " + pc.classID);
 
-            // SAVING STATS::
-            sw.WriteLine(PartyCharacterSaveDataSignifier + 
-                                        "," + pc.classID + 
-                                        "," + pc.health + 
-                                        "," + pc.mana + 
-                                        "," + pc.strength + 
-                                        "," + pc.agility + 
-                                        "," + pc.wisdom);
-        
-            // SAVING EQUIPMENT::
+            string pcStates = string.Join(",", PartyMemberSignifier, pc.classID.ToString(), pc.health, pc.mana, pc.strength, pc.agility, pc.wisdom);
+            sw.WriteLine(pcStates);
+
             foreach(int equipID in pc.equipment)
             {
-                sw.WriteLine(EquipmentSaveDataSignifier + "," + equipID);
+                string equipSaveData = string.Join(",", EquipmentSignifer, equipID);
+                sw.WriteLine(equipSaveData);
             }
 
         }
@@ -120,50 +113,30 @@ static public class AssignmentPart1
     static public void LoadPartyButtonPressed()
     {
 
+        GameContent.partyCharacters.Clear();
 
-        // Define data path
-        string path = Application.dataPath + Path.DirectorySeparatorChar + "OurBelovedSaveFile.txt";
-        
-        // 1. Findout if the file exist
-        if (File.Exists(path))
+        StreamReader sr = new StreamReader(path);
+
+        string line;
+        while((line = sr.ReadLine()) != null)
         {
-            GameContent.partyCharacters.Clear();
-            
-            string line = "";
-            StreamReader sr = new StreamReader(path);
-            
-            // Read each line unil it reads nothing(null)
-            while ((line = sr.ReadLine()) != null)  
+            string[] csv = line.Split(',');
+
+            int signifier = int.Parse(csv[0]);
+
+            if (signifier == PartyMemberSignifier)
             {
-                string[] csv = line.Split(',');     //The String.Split() method splits a string into an array of strings separated by the split delimeters.
+                PartyCharacter pc = new PartyCharacter(int.Parse(csv[1]), int.Parse(csv[2]), int.Parse(csv[3]), int.Parse(csv[4]), int.Parse(csv[5]), int.Parse(csv[6]));
 
-                //foreach(string i in csv)
-                //{
-                //    Debug.Log(i);
-                //}
+                GameContent.partyCharacters.AddLast(pc);
+            }
 
-                //Debug.Log(line);
-
-                int saveDataSignifier = int.Parse(csv[0]);
-
-                if (saveDataSignifier == PartyCharacterSaveDataSignifier)
-                {
-                    PartyCharacter pc = new PartyCharacter(int.Parse(csv[1]), int.Parse(csv[2]), int.Parse(csv[3]), 
-                                                           int.Parse(csv[4]), int.Parse(csv[5]), int.Parse(csv[6]));
-
-                    GameContent.partyCharacters.AddLast(pc);
-                }
-                else if (saveDataSignifier == EquipmentSaveDataSignifier)
-                {
-                    GameContent.partyCharacters.Last.Value.equipment.AddLast(int.Parse(csv[1]));
-                }
-                else if (saveDataSignifier == afflictionSaveDataSignifier)  // This could be easily expend
-                {
-                    // Load affliction data
-                }
-
+            if (signifier == EquipmentSignifer)
+            {
+                GameContent.partyCharacters.Last.Value.equipment.AddLast(int.Parse(csv[1]));
             }
         }
+
 
         GameContent.RefreshUI();
 
@@ -183,7 +156,7 @@ static public class AssignmentPart1
 //  This will enable the needed UI/function calls for your to proceed with your assignment.
 static public class AssignmentConfiguration
 {
-    public const int PartOfAssignmentThatIsInDevelopment = 2;
+    public const int PartOfAssignmentThatIsInDevelopment = 1;
 }
 
 /*
