@@ -105,6 +105,23 @@ public class NetworkedClient : MonoBehaviour
     private void ProcessRecievedMsg(string msg, int id)
     {
         Debug.Log("msg recieved = " + msg + ".  connection id = " + id);
+
+        string[] csv = msg.Split(',');
+
+        int signifier = int.Parse(csv[0]);
+
+        if (signifier == ServerToClientSignifier.PartyDataTransferStart)
+        {
+
+        }
+        if (signifier == ServerToClientSignifier.PartyDataTransfer)
+        {
+
+        }
+        if (signifier == ServerToClientSignifier.PartyDataTransferEnd)
+        {
+
+        }
     }
 
     public bool IsConnected()
@@ -128,9 +145,14 @@ public class SharingRoom
 static public class ClientToServerSignifier
 {
     public const int JoinSharingRoom = 1;
+    public const int PartyDataTransferStart = 101;
+    public const int PartyDataTransfer = 102;
+    public const int PartyDataTransferEnd = 103;
 }
 
 static public class ServerToClientSignifier
 {
-
+    public const int PartyDataTransferStart = 101;
+    public const int PartyDataTransfer = 102;
+    public const int PartyDataTransferEnd = 103;
 }

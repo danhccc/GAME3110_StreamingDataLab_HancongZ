@@ -32,8 +32,9 @@ public class PartySharingManager : MonoBehaviour
         networkedClient.SendMessageToHost(ClientToServerSignifier.JoinSharingRoom + "," + name);
     }
 
-    public void SharePartyButtonPressed()
+    private void SharePartyButtonPressed()
     {
-        Debug.Log("!!!!");
+        AssignmentPart2.SendPartyDataToSever(networkedClient);
+
     }
 }

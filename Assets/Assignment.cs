@@ -322,31 +322,35 @@ static public class AssignmentPart2
 
     }
 
-    //static public void SendPartyDataToSever(NetworkedClient networkedClient)
-    //{
-    //    const int PartyCharacterSaveDataSignifier = 0;
-    //    const int EquipmentSaveDataSignifier = 1;
-    //    LinkedList<string> data = new LinkedList<string>();
-    //    foreach (PartyCharacter pc in GameContent.partyCharacters)
-    //    {
-    //        data.AddLast(PartyCharacterSaveDataSignifier + "," + pc.classID + "," + pc.health
-    //                     + "," + pc.mana + "," + pc.strength
-    //                     + "," + pc.agility + "," + pc.wisdom);
 
-    //        foreach (int equipID in pc.equipment)
-    //        {
-    //            data.AddLast(EquipmentSaveDataSignifier + "," + equipID);
-    //        }
-    //    }
-    //    networkedClient.SendMessageToHost(ClientToServerSignifiers.PartyDataTransferStart + "");
-    //    foreach (string d in data)
-    //    {
-    //        networkedClient.SendMessageToHost(ClientToServerSignifiers.PartyDataTransfer + "," + d);
+    static public void SendPartyDataToSever(NetworkedClient networkedClient)
+    {
+        const int PartyCharacterSaveDataSignifier = 0;
+        const int EquipmentSaveDataSignifier = 1;
 
-    //    }
-    //    networkedClient.SendMessageToHost(ClientToServerSignifiers.PartyDataTransferEnd + "");
+        LinkedList<string> data = new LinkedList<string>();
 
-    //}
+        foreach (PartyCharacter pc in GameContent.partyCharacters)
+        {
+            data.AddLast(PartyCharacterSaveDataSignifier + "," + pc.classID + "," + pc.health
+                         + "," + pc.mana + "," + pc.strength
+                         + "," + pc.agility + "," + pc.wisdom);
+
+            foreach (int equipID in pc.equipment)
+            {
+                data.AddLast(EquipmentSaveDataSignifier + "," + equipID);
+            }
+        }
+        networkedClient.SendMessageToHost(ClientToServerSignifier.PartyDataTransferStart + "");
+
+        foreach (string d in data)
+        {
+            networkedClient.SendMessageToHost(ClientToServerSignifier.PartyDataTransfer + "," + d);
+        }
+
+        networkedClient.SendMessageToHost(ClientToServerSignifier.PartyDataTransferEnd + "");
+
+    }
 
     static public void LoadPartyFromReceivedData(LinkedList<string> data)
     {
@@ -453,6 +457,12 @@ class PartySaveData
         GameContent.RefreshUI();
 
     }
+
+    
+
+
+
+
 
 }
 
